@@ -10,11 +10,16 @@
         };
 
     public static Object read = (java.util.function.Function<Object, Object>) (ref) ->
-        (java.util.function.Supplier<Object>) () -> ((Object[]) ref)[0];
+        (java.util.function.Supplier<Object>) () -> {
+            synchronized (ref) { return ((Object[]) ref)[0]; }
+        };
 
     public static Object write = (java.util.function.Function<Object, Object>) (val) ->
         (java.util.function.Function<Object, Object>) (ref) ->
-        (java.util.function.Supplier<Object>) () -> { ((Object[]) ref)[0] = val; return null; };
+        (java.util.function.Supplier<Object>) () -> {
+            synchronized (ref) { ((Object[]) ref)[0] = val; }
+            return null;
+        };
 
     // The { state, value } record of modifyImpl is a Map for untyped records and a
     // generated record class whose accessors are read0/read1 in label order.
@@ -27,11 +32,16 @@
         }
     }
 
+    // The JVM runs Aff fibers on real threads, so the read-apply-write cycle
+    // must hold a lock on the cell; otherwise concurrent `modify'` calls lose
+    // updates (the test LoadBarrier relies on it being atomic).
     public static Object modifyImpl = (java.util.function.Function<Object, Object>) (f) ->
         (java.util.function.Function<Object, Object>) (ref) ->
         (java.util.function.Supplier<Object>) () -> {
             Object[] cell = (Object[]) ref;
-            Object updated = ((java.util.function.Function<Object, Object>) f).apply(cell[0]);
-            cell[0] = __recordField(updated, 0, "state");
-            return __recordField(updated, 1, "value");
+            synchronized (cell) {
+                Object updated = ((java.util.function.Function<Object, Object>) f).apply(cell[0]);
+                cell[0] = __recordField(updated, 0, "state");
+                return __recordField(updated, 1, "value");
+            }
         };
