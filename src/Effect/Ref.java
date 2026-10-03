@@ -21,8 +21,8 @@
             return null;
         };
 
-    // The { state, value } record of modifyImpl is a Map for untyped records and a
-    // generated record class whose accessors are read0/read1 in label order.
+    // Current typed records and untyped records both implement Map. The
+    // reflective fallback retains compatibility with older read0/read1 layouts.
     private static Object __recordField(Object record, int index, String label) {
         if (record instanceof java.util.Map) return ((java.util.Map<?, ?>) record).get(label);
         try {
@@ -34,7 +34,8 @@
 
     // The JVM runs Aff fibers on real threads, so the read-apply-write cycle
     // must hold a lock on the cell; otherwise concurrent `modify'` calls lose
-    // updates (the test LoadBarrier relies on it being atomic).
+    // updates. The callback runs once under the monitor; a thrown callback
+    // leaves the old state intact. This lock protects the cell, not its contents.
     public static Object modifyImpl = (java.util.function.Function<Object, Object>) (f) ->
         (java.util.function.Function<Object, Object>) (ref) ->
         (java.util.function.Supplier<Object>) () -> {

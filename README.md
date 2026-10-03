@@ -6,6 +6,16 @@
 
 This module defines functions for working with mutable value references.
 
+## Java port
+
+`Ref` is a one-element `Object[]`. Reads, writes and the complete `modify'`
+read/callback/write operation synchronize on the cell. The callback runs once
+under that monitor; its `{ state, value }` result supports Maps and generated
+record classes. See the [Java reference contract](../javapurs/docs/ffi-runtime.md#références).
+
+`./bin/test-runtime` checks allocation, identity, exceptions, self-reference and
+concurrent updates using the actual Java fragment. It needs Node and a JDK.
+
 _Note_: [`Control.Monad.ST`](https://pursuit.purescript.org/packages/purescript-st/4.0.0/docs/Control.Monad.ST) provides a _safe_ alternative to `Ref` when mutation is restricted to a local scope.
 
 ## Installation
