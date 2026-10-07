@@ -16,6 +16,23 @@ record classes. See the [Java reference contract](../javapurs/docs/ffi-runtime.m
 `./bin/test-runtime` checks allocation, identity, exceptions, self-reference and
 concurrent updates using the actual Java fragment. It needs Node and a JDK.
 
+To run the PureScript suite with the built neighboring backend, Spago, the TAST
+frontend and a JDK:
+
+```bash
+./bin/test
+./bin/test --help
+```
+
+The [common port runner](../javapurs/docs/testing.md#port-particulier) copies
+`src/` and `test/` into an isolated workspace, rebases `spago.java.yaml` (package
+set 77.7.0), and waits for synchronous `Test.Main` to return. It preserves the
+source configuration, lockfile and existing outputs. `-c`/`--clean` rebuilds the
+backend through its `bin/build`; unknown options fail before preparation.
+`JAVAPURS_JAVA_RELEASE` defaults to 17 and `JAVAPURS_JAVA_RUNTIME` can select a
+separate execution JVM. The JVM stack is 8 MiB. Failed workspaces and phase logs
+are retained, with their path printed.
+
 _Note_: [`Control.Monad.ST`](https://pursuit.purescript.org/packages/purescript-st/4.0.0/docs/Control.Monad.ST) provides a _safe_ alternative to `Ref` when mutation is restricted to a local scope.
 
 ## Installation
